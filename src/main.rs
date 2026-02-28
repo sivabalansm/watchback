@@ -1,7 +1,19 @@
 // Working on example over here: https://docs.rs/notify/latest/notify/
 use notify::{Event, RecursiveMode, Result, Watcher};
 use notify::event;
-use std::{path::Path, sync::mpsc};
+use std::{path::Path, sync::mpsc, fs::copy, path::PathBuf};
+
+
+fn copy_to_backup(file : &PathBuf) -> bool {
+    let BACKUP_DIR : String = String::from("/home/sivabalansm/sc/watchback/test/backup/");
+    let file_name = file.file_name().expect("Str  plz");
+    let file_name = file_name.to_str().expect("Str needed");
+    let to_dir = BACKUP_DIR + file_name;
+    match copy(file, to_dir) {
+        Ok(n) => { println!("Copied successfully, return code {:?}", n); return true },
+        Err(e) => { println!("Copy error {:?}", e); return false },
+    }
+}
 
 fn main() -> Result<()> {
     let (tx, rx) = mpsc::channel::<Result<Event>>();
@@ -14,9 +26,13 @@ fn main() -> Result<()> {
         match res {
             Ok(event) => {
                 println!("event kind: {:?}", event.kind);
-                // println!("event: {:?}", event);
                 match event.kind {
-                    event::EventKind::Create(event::CreateKind::File) => println!("new file created!"),
+                    event::EventKind::Create(event::CreateKind::File) => {
+                        println!("new file created at {:?}!", event.paths);
+                        println!("Coping file to backup dir");
+                        let path_str : &PathBuf = &event.paths[0];
+                        copy_to_backup(path_str);
+                    },
                     _ => println!("Not implemented")
                 }
             },
