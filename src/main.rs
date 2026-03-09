@@ -6,14 +6,10 @@ use std::{path::Path, sync::mpsc, fs::copy, path::PathBuf};
 
 const BACKUP_DIR : &str = "/home/sivabalansm/sc/watchback/test/backup/";
 
-fn copy_to_backup(file : &PathBuf) -> bool {
-    let file_name = file.file_name().expect("Str  plz");
-    let file_name = file_name.to_str().expect("Str needed");
+fn copy_to_backup(file : &PathBuf) {
+    let file_name = file.file_name().unwrap().to_str().unwrap();
     let to_dir = format!("{}{}", BACKUP_DIR, file_name);
-    match copy(file, to_dir) {
-        Ok(n) => { println!("Copied successfully, return code {:?}", n); return true },
-        Err(e) => { println!("Copy error {:?}", e); return false },
-    }
+    copy(file, to_dir).unwrap();
 }
 
 fn main() -> Result<()> {
